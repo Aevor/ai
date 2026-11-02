@@ -7,6 +7,7 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "false").lower() in ("true", "1", "t", "yes")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    MAX_DIFF_SIZE_CHARS: int = int(os.getenv("MAX_DIFF_SIZE_CHARS", "100000"))
 
 
 settings = Settings()

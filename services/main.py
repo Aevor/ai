@@ -15,8 +15,9 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Register versioned routers under prefix /api
+# Register versioned routers under prefix /api as well as canonical /v1 directly
 app.include_router(root_router, prefix="/api")
+app.include_router(root_router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

@@ -17,6 +17,8 @@
 - [x] Create provider-independent model abstraction interface
 - [x] Implement Gemini API provider integration
 - [x] Add automated unit tests for model provider layer
+- [x] Implement diff summarizer logic (prompts and service pipeline)
+- [x] Expose `/summarize-diff` endpoint in API layer
 
 ## Currently Working On
 
@@ -28,8 +30,8 @@
 
 ## Next
 
-- [ ] Implement diff summarizer logic (prompts and service pipeline)
-- [ ] Expose `/summarize-diff` endpoint in API layer
+- [ ] Add Docker configuration
+- [ ] Add CI setup
 
 ## Future
 
