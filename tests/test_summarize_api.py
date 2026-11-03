@@ -28,8 +28,8 @@ def mock_summary_result():
     )
 
 
-def test_summarize_diff_api_success_v1_and_api_v1(mock_summary_result):
-    """Verifies that both /v1/summarize-diff and /api/v1/summarize-diff succeed with valid diff."""
+def test_summarize_diff_api_success(mock_summary_result):
+    """Verifies that canonical /v1/summarize-diff succeeds with a valid diff payload."""
     mock_service = AsyncMock(spec=DiffSummaryService)
     mock_service.summarize_diff.return_value = mock_summary_result
 
@@ -44,17 +44,12 @@ def test_summarize_diff_api_success_v1_and_api_v1(mock_summary_result):
     }
 
     # Test canonical /v1/summarize-diff
-    res1 = client.post("/v1/summarize-diff", json=payload)
-    assert res1.status_code == 200
-    data1 = res1.json()
-    assert data1["summary"] == mock_summary_result.summary
-    assert data1["key_changes"] == mock_summary_result.key_changes
-    assert data1["review_focus"] == mock_summary_result.review_focus
-
-    # Test prefixed /api/v1/summarize-diff
-    res2 = client.post("/api/v1/summarize-diff", json=payload)
-    assert res2.status_code == 200
-    assert res2.json() == data1
+    response = client.post("/v1/summarize-diff", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["summary"] == mock_summary_result.summary
+    assert data["key_changes"] == mock_summary_result.key_changes
+    assert data["review_focus"] == mock_summary_result.review_focus
 
 
 def test_summarize_diff_empty_diff_returns_400():

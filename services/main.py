@@ -15,8 +15,7 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Register versioned routers under prefix /api as well as canonical /v1 directly
-app.include_router(root_router, prefix="/api")
+# Register canonical versioned routes (/v1/...) matching the Platform client contract
 app.include_router(root_router)
 
 @app.exception_handler(Exception)
@@ -33,3 +32,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def root():
     """Simple root welcome endpoint."""
     return {"message": f"{settings.APP_NAME} is running."}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("services.main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)

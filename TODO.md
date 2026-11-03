@@ -19,6 +19,9 @@
 - [x] Add automated unit tests for model provider layer
 - [x] Implement diff summarizer logic (prompts and service pipeline)
 - [x] Expose `/summarize-diff` endpoint in API layer
+- [x] Align route prefix with Aevor Platform contract (canonical /v1 routes)
+- [x] Add Docker configuration and local startup entrypoint
+- [x] Add platform client integration and bind configuration tests
 
 ## Currently Working On
 
@@ -30,14 +33,11 @@
 
 ## Next
 
-- [ ] Add Docker configuration
 - [ ] Add CI setup
+- [ ] Integrate with Aevor Platform
 
 ## Future
 
-- [ ] Add Docker configuration
-- [ ] Add CI setup
-- [ ] Integrate with Aevor Platform
 - [ ] Evaluate model performance/hallucinations
 
 ## Notes
