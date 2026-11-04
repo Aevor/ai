@@ -1,3 +1,4 @@
+
 # Aevor AI
 
 AI microservice within the Aevor platform powering repository intelligence, diff summarization, and contribution assistance.
@@ -8,16 +9,29 @@ AI microservice within the Aevor platform powering repository intelligence, diff
 
 Aevor AI operates as an independent microservice that communicates with the **Aevor Platform** over HTTP REST APIs.
 
-### Canonical Route Contract
+### Currently Implemented Routes
 
-All versioned endpoints use the **`/v1`** prefix directly to align with the Aevor Platform client:
+All currently implemented versioned endpoints use the shared `/v1` prefix.
 
 | Endpoint | Method | Purpose |
 | :--- | :--- | :--- |
-| `GET /v1/health` | `GET` | **Canonical Liveness Probe**: Verifies the service is healthy. |
-| `GET /v1/ready` | `GET` | **Canonical Readiness Probe**: Confirms the service is ready for traffic. |
-| `POST /v1/summarize-diff` | `POST` | **Diff Summarization**: Accepts a Git diff and returns a structured `PRSummary`. |
-| `GET /` | `GET` | Service root status check. |
+| `GET /v1/health` | GET | Liveness probe: verifies that the service is healthy. |
+| `GET /v1/ready` | GET | Readiness probe: confirms that the service is ready for traffic. |
+| `POST /v1/summarize-diff` | POST | Accepts a Git diff and returns a structured `PRSummary`. |
+| `GET /` | GET | Service root status check. |
+
+### Planned Platform Inference Operations
+
+The following API operations are planned for future implementation and are not yet available in the current service:
+
+- `/v1/analyze`
+- `/v1/analyze-repository`
+- `/v1/analyze-issue`
+- `/v1/propose-solution`
+- `/v1/generate-changes`
+- `/v1/analyze-impact`
+- `/v1/analyze-pr-feedback`
+- `/v1/analyze-validation`
 
 ---
 
@@ -32,37 +46,60 @@ The local development environment consists of the Aevor Platform and the Aevor A
 
 ### Running Locally
 
-1. **Clone and setup virtual environment**:
+1. **Clone the repository and set up a virtual environment:**
+
    ```bash
    python -m venv .venv
+
    # Windows:
    .venv\Scripts\activate
+
    # Linux/macOS:
    source .venv/bin/activate
 
    pip install -r requirements.txt
    ```
 
-2. **Configure environment variables**:
-   Copy `.env.example` to `.env` and provide your Gemini API key:
+2. **Configure environment variables:**
+
+   Copy `.env.example` to `.env` and replace the placeholder Gemini API key with your own key.
+
    ```bash
    cp .env.example .env
    ```
 
-3. **Start the AI service**:
-   Run via the module entrypoint:
+   Keep your `.env` file private. Never commit API keys or other secrets to the repository.
+
+3. **Start the AI service:**
+
+   Run using the module entrypoint:
+
    ```bash
    python -m services.main
    ```
-   Or using Uvicorn directly:
+
+   Or use Uvicorn directly with the configured host and port:
+
    ```bash
-   uvicorn services.main:app --host 0.0.0.0 --port 11434
+   python -c "import uvicorn; from services.core.config import settings; uvicorn.run('services.main:app', host=settings.HOST, port=settings.PORT)"
    ```
 
-4. **Verify service readiness**:
+   Both commands use the configured host and port values.
+
+4. **Verify service readiness:**
+
    ```bash
    curl http://localhost:11434/v1/health
-   # Returns: {"status":"healthy","environment":"development","app_name":"Aevor AI"}
+   ```
+
+   Expected response:
+
+   ```json
+   {
+     "status": "healthy",
+     "environment": "development",
+     "app_name": "Aevor AI"
+   }
    ```
 
 ---
@@ -78,6 +115,8 @@ docker build -t aevor-ai .
 # Run the container on port 11434
 docker run -p 11434:11434 --env-file .env aevor-ai
 ```
+
+The `.dockerignore` file excludes environment secrets, Git metadata, virtual environments, and unnecessary development files from the Docker build context.
 
 ---
 
