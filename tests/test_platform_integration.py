@@ -1,4 +1,11 @@
-"""Integration tests verifying compatibility with the Aevor Platform Go client contract."""
+"""Integration tests for currently implemented Aevor AI API routes.
+
+These tests verify the shared /v1 route prefix and the implemented
+health, readiness, and diff summarization endpoints.
+
+# The eight Platform inference operations are planned separately
+and are not covered by these tests.
+"""
 
 import pytest
 from unittest.mock import AsyncMock
@@ -16,46 +23,39 @@ def clean_dependency_overrides():
     app.dependency_overrides.clear()
 
 
-def test_platform_client_url_composition():
-    """Verifies that the Platform Go client's URL composition (base_url + /v1/...) resolves correctly."""
-    # The Platform Go client defines base URL as AI_SERVICE_URL (default: http://localhost:11434)
-    platform_base_url = "http://localhost:11434"
+def test_implemented_routes_use_v1_prefix():
+    """Verifies the /v1 prefix for currently implemented API routes."""
+    client = TestClient(app, base_url="http://localhost:11434")
 
-    # Use TestClient with the exact Platform base_url
-    client = TestClient(app, base_url=platform_base_url)
-
-    # 1. Health check: platform client calls {AI_SERVICE_URL}/v1/health
     health_resp = client.get("/v1/health")
     assert health_resp.status_code == 200
     assert health_resp.json()["status"] == "healthy"
 
-    # 2. Readiness check: platform client calls {AI_SERVICE_URL}/v1/ready
     ready_resp = client.get("/v1/ready")
     assert ready_resp.status_code == 200
     assert ready_resp.json()["status"] == "ready"
 
-    # 3. Summarization: platform client calls {AI_SERVICE_URL}/v1/summarize-diff
     mock_service = AsyncMock(spec=DiffSummaryService)
     mock_service.summarize_diff.return_value = PRSummary(
-        summary="Platform client compatibility verified.",
-        key_changes=["Aligned route prefixes to /v1", "Configured default port to 11434"],
+        summary="Diff summarization route verified.",
+        key_changes=["Route uses the shared /v1 prefix"],
         review_focus=["services/main.py", "services/core/config.py"]
     )
     app.dependency_overrides[get_diff_summary_service] = lambda: mock_service
 
     summarize_resp = client.post(
         "/v1/summarize-diff",
-        json={"diff": "diff --git a/main.go b/main.go\n+aiClient.Summarize(diff)"}
+        json={"diff": "diff --git a/main.go b/main.go\n+example change"}
     )
     assert summarize_resp.status_code == 200
+
     data = summarize_resp.json()
-    assert data["summary"] == "Platform client compatibility verified."
-    assert "Aligned route prefixes to /v1" in data["key_changes"]
+    assert data["summary"] == "Diff summarization route verified."
+    assert "Route uses the shared /v1 prefix" in data["key_changes"]
 
 
 def test_configurable_host_and_port(monkeypatch):
     """Verifies that bind host and port are configurable via environment variables."""
-    # Test custom namespaced environment variables
     monkeypatch.setenv("AI_SERVICE_HOST", "127.0.0.1")
     monkeypatch.setenv("AI_SERVICE_PORT", "12345")
 
@@ -63,7 +63,6 @@ def test_configurable_host_and_port(monkeypatch):
     assert custom_settings.HOST == "127.0.0.1"
     assert custom_settings.PORT == 12345
 
-    # Test fallback standard environment variables
     monkeypatch.delenv("AI_SERVICE_HOST")
     monkeypatch.delenv("AI_SERVICE_PORT")
     monkeypatch.setenv("HOST", "0.0.0.0")
