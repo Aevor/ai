@@ -1,3 +1,4 @@
+
 # Aevor AI
 
 AI microservice within the Aevor platform powering repository intelligence, diff summarization, and contribution assistance.
@@ -77,11 +78,13 @@ The local development environment consists of the Aevor Platform and the Aevor A
    python -m services.main
    ```
 
-   Or use Uvicorn directly:
+   Or use Uvicorn directly with the configured host and port:
 
    ```bash
-   uvicorn services.main:app --host 0.0.0.0 --port 11434
+   python -c "import uvicorn; from services.core.config import settings; uvicorn.run('services.main:app', host=settings.HOST, port=settings.PORT)"
    ```
+
+   Both commands use the configured host and port values.
 
 4. **Verify service readiness:**
 
@@ -112,6 +115,7 @@ docker build -t aevor-ai .
 # Run the container on port 11434
 docker run -p 11434:11434 --env-file .env aevor-ai
 ```
+
 The `.dockerignore` file excludes environment secrets, Git metadata, virtual environments, and unnecessary development files from the Docker build context.
 
 ---

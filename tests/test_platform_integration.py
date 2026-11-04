@@ -1,15 +1,21 @@
+
 """Integration tests for currently implemented Aevor AI API routes.
 
 These tests verify the shared /v1 route prefix and the implemented
 health, readiness, and diff summarization endpoints.
 
-# The eight Platform inference operations are planned separately
+The eight Platform inference operations are planned separately
 and are not covered by these tests.
 """
 
-import pytest
+import importlib
 from unittest.mock import AsyncMock
+
+import pytest
+from dotenv import main as dotenv_main
 from fastapi.testclient import TestClient
+
+import services.core.config as config_module
 from models.schemas import PRSummary
 from services.api.v1.endpoints.summarize import get_diff_summary_service
 from services.core.config import Settings
@@ -71,3 +77,27 @@ def test_configurable_host_and_port(monkeypatch):
     default_settings = Settings()
     assert default_settings.HOST == "0.0.0.0"
     assert default_settings.PORT == 11434
+
+
+def test_dotenv_is_loaded_when_config_module_initializes(monkeypatch, tmp_path):
+    """Verifies that configuration loads values from a .env file during initialization."""
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "APP_NAME=Loaded from temporary dotenv\n",
+        encoding="utf-8"
+    )
+
+    with monkeypatch.context() as m:
+        m.delenv("APP_NAME", raising=False)
+        m.setattr(
+            dotenv_main,
+            "find_dotenv",
+            lambda *args, **kwargs: str(env_file)
+        )
+
+        reloaded_config = importlib.reload(config_module)
+
+        assert reloaded_config.settings.APP_NAME == "Loaded from temporary dotenv"
+
+    # Restore the configuration module after the test.
+    importlib.reload(config_module)
